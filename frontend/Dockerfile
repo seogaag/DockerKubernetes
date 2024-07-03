@@ -1,20 +1,28 @@
-FROM node:14-alpine
+FROM node:14
 
 # 앱 디렉토리 생성
 WORKDIR /app
 
-# package.json 및 package-lock.json 복사하여 종속성 설치
-COPY package*.json ./
+# GitHub에서 소스 코드 복사
+RUN apt-get update && apt-get install -y git
+ARG CACHEBUST=1
+RUN git clone https://github.com/sudo-G41/kitri_semi_fe .
+
+
+# 종속성 설치
+# COPY package*.json ./
 RUN npm install
 
 # 앱 소스 코드 복사
-COPY . .
+# COPY . .
 
 # 앱 빌드
 RUN npm run build
 
+# 포트 노출
+EXPOSE 80
+
 # NGINX 설치 및 설정
 FROM nginx:alpine
 COPY --from=0 /app/build /usr/share/nginx/html
-EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
